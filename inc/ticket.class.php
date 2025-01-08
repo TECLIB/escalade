@@ -41,7 +41,7 @@ class PluginEscaladeTicket
         if (isset($input['_itil_assign'])) {
             $item->input['_do_not_compute_status'] = true;
         }
-        $config = $_SESSION['plugins']['escalade']['config'];
+        $config = PluginEscaladeConfig::getConfig();
         $old_groups = [];
 
         // Get actual actors for the ticket
@@ -86,9 +86,9 @@ class PluginEscaladeTicket
             ) {
                 //disable notification to prevent notification for old AND new group
                 $item->input['_disablenotif'] = true;
-                if ($_SESSION['plugins']['escalade']['config']['ticket_last_status'] != -1) {
+                if (PluginEscaladeConfig::getConfig('ticket_last_status') != -1) {
                     $item->input['_do_not_compute_status'] = true;
-                    $item->input['status'] = $_SESSION['plugins']['escalade']['config']['ticket_last_status'];
+                    $item->input['status'] = PluginEscaladeConfig::getConfig('ticket_last_status');
                 }
                 return PluginEscaladeTicket::addHistoryOnAddGroup($item);
             } else if (count($old_groups) == count($new_groups)) {
@@ -100,9 +100,9 @@ class PluginEscaladeTicket
                 foreach ($new_groups as $new_group) {
                     if (!isset($old_group_ids[$new_group['items_id']])) {
                         $item->input['_disablenotif'] = true;
-                        if ($_SESSION['plugins']['escalade']['config']['ticket_last_status'] != -1) {
+                        if (PluginEscaladeConfig::getConfig('ticket_last_status') != -1) {
                             $item->input['_do_not_compute_status'] = true;
-                            $item->input['status'] = $_SESSION['plugins']['escalade']['config']['ticket_last_status'];
+                            $item->input['status'] = PluginEscaladeConfig::getConfig('ticket_last_status');
                         }
                         return PluginEscaladeTicket::addHistoryOnAddGroup($item);
                     }
@@ -120,7 +120,7 @@ class PluginEscaladeTicket
     public static function item_update(CommonDBTM $item)
     {
 
-        if ($_SESSION['plugins']['escalade']['config']['remove_group']) {
+        if (PluginEscaladeConfig::getConfig('remove_group')) {
             //solve ticket
             if (isset($item->input['status']) && $item->input['status'] == CommonITILObject::SOLVED) {
                 self::AssignFirstGroupOnSolve($item);
@@ -168,8 +168,8 @@ class PluginEscaladeTicket
     public static function AssignFirstGroupOnSolve(CommonDBTM $item)
     {
         if (
-            $_SESSION['plugins']['escalade']['config']['remove_group']
-            && $_SESSION['plugins']['escalade']['config']['solve_return_group']
+            PluginEscaladeConfig::getConfig('remove_group')
+            && PluginEscaladeConfig::getConfig('solve_return_group')
         ) {
             $tickets_id = $item->fields['id'];
 
@@ -203,7 +203,7 @@ class PluginEscaladeTicket
             }
 
             //add a task to inform the escalation
-            if ($_SESSION['plugins']['escalade']['config']['task_history']) {
+            if (PluginEscaladeConfig::getConfig('task_history')) {
                 $group = new Group();
                 $group->getFromDB($first_history['groups_id']);
                 $task = new TicketTask();
@@ -232,8 +232,8 @@ class PluginEscaladeTicket
         }
 
         if (
-            $_SESSION['plugins']['escalade']['config']['remove_group']
-            && $_SESSION['plugins']['escalade']['config']['solve_return_group']
+            PluginEscaladeConfig::getConfig('remove_group')
+            && PluginEscaladeConfig::getConfig('solve_return_group')
         ) {
             $tickets_id = $item->fields['id'];
 
@@ -268,7 +268,7 @@ class PluginEscaladeTicket
             ]);
 
             //add a task to inform the escalation
-            if ($_SESSION['plugins']['escalade']['config']['task_history']) {
+            if (PluginEscaladeConfig::getConfig('task_history')) {
                 $group = new Group();
                 $group->getFromDB($rejected_history['groups_id']);
                 $task = new TicketTask();
@@ -282,10 +282,10 @@ class PluginEscaladeTicket
             }
 
             //update status
-            if ($_SESSION['plugins']['escalade']['config']['ticket_last_status'] != -1) {
+            if (PluginEscaladeConfig::getConfig('ticket_last_status')) {
                 $item->update([
                     'id' => $tickets_id,
-                    'status' => $_SESSION['plugins']['escalade']['config']['ticket_last_status']
+                    'status' => PluginEscaladeConfig::getConfig('ticket_last_status')
                 ]);
             }
         }
@@ -302,7 +302,7 @@ class PluginEscaladeTicket
         /** @var DBmysql $DB */
         global $DB;
 
-        if ($_SESSION['plugins']['escalade']['config']['remove_group'] == false) {
+        if (PluginEscaladeConfig::getConfig('remove_group') == false) {
             return true;
         }
 
@@ -369,7 +369,7 @@ class PluginEscaladeTicket
             return $item;
         }
         if (
-            $_SESSION['plugins']['escalade']['config']['task_history']
+            PluginEscaladeConfig::getConfig('task_history')
             && !($item->input['_plugin_escalade_no_history'] ?? false)
         ) {
             $group = new Group();
@@ -384,11 +384,11 @@ class PluginEscaladeTicket
             ]);
         }
 
-        if ($_SESSION['plugins']['escalade']['config']['ticket_last_status'] != -1) {
+        if (PluginEscaladeConfig::getConfig('ticket_last_status') != -1) {
             $ticket = new Ticket();
             $ticket->update([
                 'id'     => $tickets_id,
-                'status' => $_SESSION['plugins']['escalade']['config']['ticket_last_status']
+                'status' => PluginEscaladeConfig::getConfig('ticket_last_status')
             ]);
         }
 
@@ -401,7 +401,7 @@ class PluginEscaladeTicket
         $groups_id = $item->fields['groups_id'];
 
         //remove old groups (keep last assigned)
-        if ($_SESSION['plugins']['escalade']['config']['remove_group'] == true) {
+        if (PluginEscaladeConfig::getConfig('remove_group') == true) {
             self::removeAssignGroups($tickets_id, $groups_id);
         }
     }
@@ -429,8 +429,8 @@ class PluginEscaladeTicket
 
         //check this plugin config
         if (
-            $_SESSION['plugins']['escalade']['config']['use_assign_user_group'] == 0
-            || $_SESSION['plugins']['escalade']['config']['use_assign_user_group_creation'] == 0
+            PluginEscaladeConfig::getConfig('use_assign_user_group') == 0
+            || PluginEscaladeConfig::getConfig('use_assign_user_group_creation') == 0
         ) {
             return false;
         }
@@ -441,7 +441,7 @@ class PluginEscaladeTicket
             && (!isset($ticket->input['_groups_id_assign'])
                 || empty($ticket->input['_groups_id_assign']))
         ) {
-            if ($_SESSION['plugins']['escalade']['config']['use_assign_user_group'] == 1) {
+            if (PluginEscaladeConfig::getConfig('use_assign_user_group') == 1) {
                 // First group
                 $ticket->input['_groups_id_assign']
                     = PluginEscaladeUser::getTechnicianGroup(
@@ -494,8 +494,8 @@ class PluginEscaladeTicket
             $_form_object = [
                 '_do_not_compute_status' => true,
             ];
-            if ($_SESSION['plugins']['escalade']['config']['ticket_last_status'] != -1) {
-                $_form_object['status'] = $_SESSION['plugins']['escalade']['config']['ticket_last_status'];
+            if (PluginEscaladeConfig::getConfig('ticket_last_status') != -1) {
+                $_form_object['status'] = PluginEscaladeConfig::getConfig('ticket_last_status');
             }
             $ticket_details = $_POST['ticket_details'] ?? $_GET['ticket_details'] ?? [];
             $updates_ticket = new Ticket();
@@ -546,15 +546,15 @@ class PluginEscaladeTicket
     public static function removeAssignUsers($item, $keep_users_id = false, $type = CommonITILActor::ASSIGN)
     {
         if (
-            $_SESSION['plugins']['escalade']['config']['remove_tech'] == false
-            && $_SESSION['plugins']['escalade']['config']['remove_requester'] == false
+            PluginEscaladeConfig::getConfig('remove_tech') == false
+            && PluginEscaladeConfig::getConfig('remove_requester') == false
         ) {
             return true;
         }
-        if ($type == CommonITILActor::ASSIGN && !$_SESSION['plugins']['escalade']['config']['remove_tech']) {
+        if ($type == CommonITILActor::ASSIGN && !PluginEscaladeConfig::getConfig('remove_tech')) {
             return true;
         }
-        if ($type == CommonITILActor::REQUESTER && !$_SESSION['plugins']['escalade']['config']['remove_requester']) {
+        if ($type == CommonITILActor::REQUESTER && !PluginEscaladeConfig::getConfig('remove_requester')) {
             return true;
         }
 
@@ -627,13 +627,13 @@ class PluginEscaladeTicket
         // == Add user groups on modification ==
         //check this plugin config
         if (
-            $_SESSION['plugins']['escalade']['config']['use_assign_user_group'] == 0
-            || $_SESSION['plugins']['escalade']['config']['use_assign_user_group_modification'] == 0
+            PluginEscaladeConfig::getConfig('use_assign_user_group') == 0
+            || PluginEscaladeConfig::getConfig('use_assign_user_group_modification') == 0
         ) {
             return true;
         }
 
-        if ($_SESSION['plugins']['escalade']['config']['use_assign_user_group'] == 1) {
+        if (PluginEscaladeConfig::getConfig('use_assign_user_group') == 1) {
             // First group
             $groups_id = PluginEscaladeUser::getTechnicianGroup(
                 $ticket->fields['entities_id'],
@@ -673,7 +673,7 @@ class PluginEscaladeTicket
                 'type'       => CommonITILActor::ASSIGN
             ]);
         } else {
-            if ($_SESSION['plugins']['escalade']['config']['remove_tech']) {
+            if (PluginEscaladeConfig::getConfig('remove_tech')) {
                 self::removeAssignGroups($tickets_id);
             }
         }
@@ -693,7 +693,7 @@ class PluginEscaladeTicket
      */
     public static function linkedTickets(CommonDBTM $ticket, $status = CommonITILObject::SOLVED)
     {
-        if ($_SESSION['plugins']['escalade']['config']['close_linkedtickets']) {
+        if (PluginEscaladeConfig::getConfig('close_linkedtickets')) {
             $input = [
                 'status' => $status
             ];
@@ -738,7 +738,7 @@ class PluginEscaladeTicket
         //category group
         if (
             !empty($category->fields['groups_id'])
-            && $_SESSION['plugins']['escalade']['config']['reassign_group_from_cat']
+            && PluginEscaladeConfig::getConfig('reassign_group_from_cat')
         ) {
             $group_ticket = new Group_Ticket();
 
@@ -753,7 +753,7 @@ class PluginEscaladeTicket
                 //add group to ticket
                 $group_ticket->add($group_condition);
                 //remove old group if needed
-                if ($_SESSION['plugins']['escalade']['config']['remove_group']) {
+                if (PluginEscaladeConfig::getConfig('remove_group')) {
                     if (isset($item->input['_groups_id_assign'])) {
                         foreach ($item->input['_groups_id_assign'] as $idActor => $actor) {
                             unset($item->input['_groups_id_assign'][$idActor]);
@@ -768,7 +768,7 @@ class PluginEscaladeTicket
         //category user
         if (
             !empty($category->fields['users_id'])
-            && $_SESSION['plugins']['escalade']['config']['reassign_tech_from_cat']
+            && PluginEscaladeConfig::getConfig('reassign_tech_from_cat')
         ) {
             $ticket_user = new Ticket_User();
 
@@ -783,7 +783,7 @@ class PluginEscaladeTicket
                 //add user to ticket
                 $ticket_user->add($user_condition);
                 //remove old tech if needed
-                if ($_SESSION['plugins']['escalade']['config']['remove_tech']) {
+                if (PluginEscaladeConfig::getConfig('remove_tech')) {
                     if (isset($item->input['_users_id_assign'])) {
                         foreach ($item->input['_users_id_assign'] as $idActor => $actor) {
                             unset($item->input['_users_id_assign'][$idActor]);

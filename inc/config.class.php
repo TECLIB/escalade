@@ -400,4 +400,30 @@ class PluginEscaladeConfig extends CommonDBTM
             'rand' => $rand,
         ]);
     }
+
+    public static function getConfig($field = false)
+    {
+        $config = new self();
+        $config->getFromDB(1);
+        unset($config->fields['id']);
+
+        if (
+            isset($_SESSION['glpiID'])
+            && isset($config->fields['use_filter_assign_group'])
+            && $config->fields['use_filter_assign_group']
+        ) {
+            $user = new PluginEscaladeUser();
+            if ($user->getFromDBByCrit(['users_id' => $_SESSION['glpiID']])) {
+               //if a bypass is defined for user
+                if ($user->fields['use_filter_assign_group']) {
+                    $config->fields['use_filter_assign_group'] = 0;
+                }
+            }
+        }
+
+        if ($field === false) {
+            return $config->fields;
+        }
+        return $config->fields[$field];
+    }
 }

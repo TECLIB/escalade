@@ -66,8 +66,8 @@ if (isset($_POST['escalate'])) {
         $_form_object = [
             '_do_not_compute_status' => true,
         ];
-        if ($_SESSION['plugins']['escalade']['config']['ticket_last_status'] != -1) {
-            $_form_object['status'] = $_SESSION['plugins']['escalade']['config']['ticket_last_status'];
+        if (PluginEscaladeConfig::getConfig('ticket_last_status') != -1) {
+            $_form_object['status'] = PluginEscaladeConfig::getConfig('ticket_last_status');
         }
         $updates_ticket = new Ticket();
         if (
