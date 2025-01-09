@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - Redirect users without ticket rights after escalation.
 - Fix private task added when ticket mandatory fields are not filled
-- fix: rename $_SESSION key from 'plugins' to 'glpi_plugins'
+- Ensure plugin works seamlessly in external contexts (e.g., from plugins)
 
 ## [2.9.10] - 2024-11-27
 
