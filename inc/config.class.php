@@ -379,7 +379,7 @@ class PluginEscaladeConfig extends CommonDBTM
             }
         }
 
-        $_SESSION['plugins']['escalade']['config'] = $config->fields;
+        $_SESSION['glpi_plugins']['escalade']['config'] = $config->fields;
     }
 
     public static function dropdownGenericStatus($itemtype, $name, $rand, $value = CommonITILObject::INCOMING)
