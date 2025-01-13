@@ -62,8 +62,8 @@ function plugin_init_escalade()
             PluginEscaladeConfig::loadInSession();
 
            // == Load js scripts ==
-            if (isset($_SESSION['plugins']['escalade']['config'])) {
-                $escalade_config = $_SESSION['plugins']['escalade']['config'];
+            if (isset($_SESSION['glpi_plugins']['escalade']['config'])) {
+                $escalade_config = $_SESSION['glpi_plugins']['escalade']['config'];
 
                 $PLUGIN_HOOKS['add_javascript']['escalade'][] = 'js/function.js';
 
